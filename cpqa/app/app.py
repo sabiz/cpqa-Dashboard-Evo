@@ -140,6 +140,15 @@ class CpqaApp(App):
                 self.on_tap_value_name_label_callback()
 
         def on_update_value(self, request, value):
-            self.value_label.text = str(round(value, 2))
-            self.value_unit_label.text = request.unit
-            self.value_name_label.text = request.name
+            if value is None:
+                self.value_label.text = "N/A"
+                self.value_unit_label.text = ""
+                self.value_name_label.text = "Connection lost"
+            elif isinstance(value, str):
+                self.value_label.text = value
+                self.value_unit_label.text = ""
+                self.value_name_label.text = request.name
+            else:
+                self.value_label.text = str(round(value, 2))
+                self.value_unit_label.text = request.unit
+                self.value_name_label.text = request.name

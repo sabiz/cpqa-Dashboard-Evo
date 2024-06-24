@@ -49,8 +49,8 @@ from cpqa.mut.request.wastegate_duty_cycle_correction import WastegateDutyCycleC
 
 class MutClient:
 
-    __MAX_HISTORY_SIZE = 25
-    __MIN_HISTORY_SIZE = 5
+    __MAX_HISTORY_SIZE = 50
+    __MIN_HISTORY_SIZE = 15
 
     def __init__(self, is_mock):
         vender_id = Settings.get(Settings.Keys.VENDOR_ID)
@@ -72,10 +72,15 @@ class MutClient:
         log_d("MutClient", "close")
 
     def request(self, request):
+        """
+        :param request: MutRequest
+        :return: float or None(when connection is lost)
+        """
+
         result = self.__mut.request(request.request_id)
         if not result.is_success:
-            log_d("MutClient", f"request failed: {result}")
-            return 0
+            log_i("MutClient", f"request failed: {result}")
+            return result.status
 
         if isinstance(request, MultiMutRequest):
             result_values = []
@@ -91,6 +96,7 @@ class MutClient:
 
         has_connection = self.__check_connection(result.value)
         if not has_connection:
+            log_i("MutClient", "Connection lost")
             return None
 
         return resultValue
