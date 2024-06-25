@@ -1,3 +1,6 @@
 kivy[base]==2.3.0
-pytest==3.1.0
+pytest==8.2.2
 build==1.1.1
+coverage==7.5.4
+pytest-mock==3.14.0
+pytest-cov==5.0.0

@@ -1,5 +1,3 @@
-from .__mut_mock import MutMock
-from .__mut_native_proxy import MutNativeProxy as Mut
 from cpqa.common.log import log_i
 from cpqa.common.log import log_d
 from cpqa.common.log import log_e
@@ -57,19 +55,31 @@ class MutClient:
         product_id = Settings.get(Settings.Keys.PRODUCT_ID)
         log_i("MutClient", f"vendor_id: {vender_id:04x}, product_id: {product_id:04x}")
         if (is_mock):
+            from cpqa.mut.__mut_mock import MutMock
             self.__mut = MutMock(vender_id, product_id)
-        else:
+        else: # pragma: no cover
+            from cpqa.mut.__mut_native_proxy import MutNativeProxy as Mut
             self.__mut = Mut(vender_id, product_id)
         self.request_history = []
 
     def open(self, index):
+        if index < 0:
+            log_e("MutClient", f"open: index is negative: {index}")
+            raise ValueError("index is negative")
+
         result = self.__mut.open(index)
-        log_d("MutClient", f"open: {result}")
+        if not result.is_success:
+            log_w("MutClient", f"open: {result}")
+        else:
+            log_d("MutClient", f"open: {result}")
         return result.is_success
 
     def close(self):
-        self.__mut.close()
-        log_d("MutClient", "close")
+        result = self.__mut.close()
+        if not result.is_success:
+            log_w("MutClient", f"close: {result}")
+        else:
+            log_d("MutClient", "close")
 
     def request(self, request):
         """

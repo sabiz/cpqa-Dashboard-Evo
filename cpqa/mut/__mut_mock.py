@@ -13,7 +13,7 @@ class MutMock:
         return MutResult(0, MutResult.STATUS_OK, True)
 
     def close(self):
-        pass
+        return MutResult(0, MutResult.STATUS_OK, True)
 
     def request(self, request_id):
         time.sleep(0.05)
