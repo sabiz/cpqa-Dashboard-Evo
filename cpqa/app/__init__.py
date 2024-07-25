@@ -1,3 +1,4 @@
-from .app import CpqaApp
+from .app import CpqaDashboard
 
-__all__ = ['CpqaApp']
+
+__all__ = ["CpqaDashboard"]

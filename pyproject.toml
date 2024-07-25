@@ -12,7 +12,11 @@ exclude = []
 [tool.coverage.run]
 omit = [
     "tests/*",
-    "cpqa/mut/request/*",
-    "cpqa/common/log.py",
+    "*/__init__.py",
+    "cpqa/app/app.py",
+    "cpqa/app/scene/_scene_interface.py",
+    "cpqa/app/util/graphics_util.py",
     "cpqa/mut/__mut_mock.py",
+    "cpqa/mut/request/*"
+
 ]

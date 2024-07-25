@@ -1,12 +1,12 @@
 from cpqa.native.mut import Mut
-from cpqa.common.log import log_i
-from cpqa.common.log import log_d
-from cpqa.common.log import log_e
-from cpqa.common.log import log_w
-from cpqa.mut.mut_result import MutResult
+from cpqa.common import log_i
+from cpqa.common import log_d
+from cpqa.common import log_e
+from cpqa.common import log_w
+from cpqa.mut import MutResult
+
 
 class MutNativeProxy:
-
     __NATIVE_LOG_LEVEL_VERBOSE = 0
     __NATIVE_LOG_LEVEL_INFO = 1
     __NATIVE_LOG_LEVEL_WARNING = 2
@@ -34,7 +34,11 @@ class MutNativeProxy:
 
     @staticmethod
     def __toMutResult(result):
-        return MutResult(result.get('value'), result['status'], result['status'] == MutResult.STATUS_OK)
+        return MutResult(
+            result.get("value"),
+            result["status"],
+            result["status"] == MutResult.STATUS_OK,
+        )
 
     @staticmethod
     def __native_log(level, msg):

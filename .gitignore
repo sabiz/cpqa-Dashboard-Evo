@@ -60,6 +60,7 @@ cover/
 
 # Django stuff:
 *.log
+*.log.*
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -215,3 +216,4 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/vim,visualstudiocode,python
 
 data
+*.lock
