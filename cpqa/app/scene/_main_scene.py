@@ -1,17 +1,18 @@
-import pyray as pr
 import subprocess
 from collections import namedtuple
 from ._scene_interface import SceneInterface
 from ._exit_scene import ExitScene
 from cpqa.app.core import Scheduler
+from cpqa.app.core import Screen
+from cpqa.app.core import MouseEvents
+from cpqa.app.core import Painter
+from cpqa.app.core import Rectangle
+from cpqa.app.core import Point
 from cpqa.common import Settings
 from cpqa.common import Keys
 from cpqa.common import log_d
+from cpqa.common import log_i
 from cpqa.common import log_e
-from cpqa.app.util.graphics_util import Rectangle
-from cpqa.app.util.graphics_util import Point
-from cpqa.app.util.graphics_util import get_ajusted_font_size
-from cpqa.app.util.graphics_util import get_text_width
 from cpqa.mut import MutClient
 
 RequestJob = namedtuple("RequestJob", ("request", "interval"))
@@ -20,13 +21,14 @@ LOG_TAG = "MainScene"
 
 
 class MainScene(SceneInterface):
-    COLOR_LABEL_BG = pr.Color(169, 29, 58, 255)
-    COLOR_LABEL_TEXT = pr.Color(255, 230, 230, 255)
-    COLOR_POWER_BG = pr.Color(0, 0, 0, 255)
-    COLOR_POWER_LINE = pr.Color(169, 29, 58, 255)
+    COLOR_LABEL_BG = (169, 29, 58)
+    COLOR_LABEL_TEXT = (255, 230, 230)
+    COLOR_POWER_BG = (0, 0, 0)
+    COLOR_POWER_LINE = (169, 29, 58)
 
     def __init__(self):
         self.__scheduler = Scheduler()
+        self.__screen = Screen()
         self.__screen_width = None
         self.__screen_height = None
         self.__label_area = None
@@ -41,6 +43,7 @@ class MainScene(SceneInterface):
         self.__label_text = ""
         self.__last_label_text = ""
         self.__value_text = ""
+        self.__last_value_text = ""
         self.__unit_text = ""
         self.__last_unit_text = ""
 
@@ -49,108 +52,11 @@ class MainScene(SceneInterface):
         self.__scheduled_task_id = None
         self.__is_closed = False
 
-    def update(self, mut_client):
-        if pr.is_mouse_button_released(pr.MOUSE_LEFT_BUTTON) and not self.__is_closed:
-            p = pr.get_mouse_position()
-            if (
-                self.__label_area.x
-                <= p.x
-                <= self.__label_area.x + self.__label_area.width
-                and self.__label_area.y
-                <= p.y
-                <= self.__label_area.y + self.__label_area.height
-            ):
-                self.__change_request(mut_client)
+        settings = Settings()
 
-            elif self.__power_point.x - (
-                self.__power_radius * 2
-            ) <= p.x <= self.__power_point.x + (
-                self.__power_radius * 2
-            ) and self.__power_point.y - (
-                self.__power_radius * 2
-            ) <= p.y <= self.__power_point.y + (self.__power_radius * 2):
-                self.__push_power(mut_client)
-
-    def draw(self):
-        pr.clear_background(pr.BLACK)
-        # draw label ----------------------------
-        pr.draw_rectangle(
-            0,
-            self.__label_area.y,
-            self.__label_area.width,
-            self.__label_area.height,
-            MainScene.COLOR_LABEL_BG,
-        )
-        pr.draw_text(
-            self.__label_text,
-            self.__label_area.x,
-            self.__label_area.y,
-            self.__label_font_size,
-            MainScene.COLOR_LABEL_TEXT,
-        )
-
-        # draw value ----------------------------
-        pr.draw_text(
-            self.__value_text,
-            self.__value_area.x,
-            self.__value_area.y,
-            self.__value_font_size,
-            pr.WHITE,
-        )
-
-        # draw unit ----------------------------
-        pr.draw_text(
-            self.__unit_text,
-            self.__unit_area.x,
-            self.__value_area.y + self.__value_font_size,
-            self.__unit_font_size,
-            pr.WHITE,
-        )
-
-        # draw power ----------------------------
-        pr.draw_ring(
-            pr.Vector2(self.__power_point.x, self.__power_point.y),
-            self.__power_radius,
-            self.__power_radius - 5,
-            0,
-            360,
-            1,
-            MainScene.COLOR_POWER_LINE,
-        )
-        pr.draw_line_ex(
-            pr.Vector2(
-                self.__power_point.x,
-                0,
-            ),
-            pr.Vector2(
-                self.__power_point.x,
-                self.__power_radius,
-            ),
-            9,
-            MainScene.COLOR_POWER_BG,
-        )
-        pr.draw_line_ex(
-            pr.Vector2(
-                self.__power_point.x,
-                0,
-            ),
-            pr.Vector2(
-                self.__power_point.x,
-                self.__power_radius,
-            ),
-            5,
-            MainScene.COLOR_POWER_LINE,
-        )
-
-    def change_scene_if_needed(self, mut_client):
-        if self.__is_closed:
-            return ExitScene
-        return None
-
-    def on_enter(self, mut_client):
         if self.__screen_width is None or self.__screen_height is None:
-            self.__screen_width = pr.get_screen_width()
-            self.__screen_height = pr.get_screen_height()
+            self.__screen_width = settings.get(Keys.WINDOW_WIDTH)
+            self.__screen_height = settings.get(Keys.WINDOW_HEIGHT)
             self.__label_area = Rectangle(
                 0,
                 int(self.__screen_height * 0.8),
@@ -170,11 +76,134 @@ class MainScene(SceneInterface):
             )
             self.__unit_area = Rectangle(
                 int(self.__screen_width * 0.8),
-                0,
+                self.__value_area.y + self.__value_area.height,
                 int(self.__screen_width * 0.2),
                 int(self.__screen_height * 0.2),
             )
 
+    def update(self, mut_client):
+        events = self.__screen.get_mouse_event()
+        for event in events:
+            if event.event == MouseEvents.LEFT_BUTTON_UP and not self.__is_closed:
+                if (
+                    self.__label_area.x
+                    <= event.x
+                    <= self.__label_area.x + self.__label_area.width
+                    and self.__label_area.y
+                    <= event.y
+                    <= self.__label_area.y + self.__label_area.height
+                ):
+                    self.__change_request(mut_client)
+
+                elif self.__power_point.x - (
+                    self.__power_radius * 2
+                ) <= event.x <= self.__power_point.x + (
+                    self.__power_radius * 2
+                ) and self.__power_point.y - (
+                    self.__power_radius * 2
+                ) <= event.y <= self.__power_point.y + (self.__power_radius * 2):
+                    self.__push_power(mut_client)
+
+    def draw(self, canvas):
+        is_changed = False
+
+        # update font size
+        if self.__last_label_text != self.__label_text:
+            self.__last_label_text = self.__label_text
+            self.__label_font_size = Painter.get_ajusted_font_size(
+                self.__label_text,
+                self.__label_area.width,
+                self.__label_area.height,
+            )
+            is_changed = True
+
+        if self.__last_value_text != self.__value_text:
+            self.__last_value_text = self.__value_text
+            self.__value_font_size = Painter.get_ajusted_font_size(
+                self.__value_text, self.__value_area.width, self.__value_area.height
+            )
+            is_changed = True
+
+        if self.__last_unit_text != self.__unit_text:
+            self.__last_unit_text = self.__unit_text
+            self.__unit_font_size = Painter.get_ajusted_font_size(
+                self.__unit_text, self.__unit_area.width, self.__unit_area.height
+            )
+            is_changed = True
+
+        if not is_changed:
+            # log_d(LOG_TAG, "skip draw")
+            return
+
+        Painter.clear(canvas)
+        # draw label ----------------------------
+        Painter.fill_rect(canvas, self.__label_area, MainScene.COLOR_LABEL_BG)
+        Painter.draw_text_area(
+            canvas,
+            self.__label_text,
+            self.__label_area.x,
+            self.__label_area.y + self.__label_area.height,
+            self.__label_area.width,
+            self.__label_area.height,
+            self.__label_font_size,
+            MainScene.COLOR_LABEL_TEXT,
+        )
+
+        # draw value ----------------------------
+        Painter.draw_text_area(
+            canvas,
+            self.__value_text,
+            self.__value_area.x,
+            self.__value_area.y + self.__value_area.height,
+            self.__value_area.width,
+            self.__value_area.height,
+            self.__value_font_size,
+            (255, 255, 255),
+        )
+
+        # draw unit ----------------------------
+        Painter.draw_text_area(
+            canvas,
+            self.__unit_text,
+            self.__unit_area.x,
+            self.__unit_area.y + self.__unit_area.height,
+            self.__unit_area.width,
+            self.__unit_area.height,
+            self.__unit_font_size,
+            (255, 255, 255),
+        )
+
+        # draw power ----------------------------
+        Painter.draw_ring(
+            canvas,
+            self.__power_point,
+            self.__power_radius,
+            MainScene.COLOR_POWER_LINE,
+            3,
+        )
+
+        Painter.draw_line(
+            canvas,
+            Point(self.__power_point.x, 0),
+            Point(self.__power_point.x, self.__power_radius),
+            MainScene.COLOR_POWER_BG,
+            9,
+        )
+
+        Painter.draw_line(
+            canvas,
+            Point(self.__power_point.x, 0),
+            Point(self.__power_point.x, self.__power_radius),
+            MainScene.COLOR_POWER_LINE,
+            5,
+        )
+
+    def change_scene_if_needed(self, mut_client):
+        if self.__is_closed:
+            return ExitScene
+        return None
+
+    def on_enter(self, mut_client):
         self.__load_request_settings()
         self.__start_request(mut_client)
 
@@ -226,57 +255,15 @@ class MainScene(SceneInterface):
             self.__unit_text = request.unit
             self.__label_text = request.name
 
-        # update font size
-        if self.__last_label_text != self.__label_text:
-            self.__last_label_text = self.__label_text
-            self.__label_font_size = get_ajusted_font_size(
-                self.__label_text, self.__label_area.width - 10
-            )
-            if self.__label_area.height < self.__label_font_size:
-                self.__label_font_size = self.__label_area.height
-            self.__label_area.x = int(
-                (
-                    self.__label_area.width
-                    - get_text_width(self.__label_text, self.__label_font_size)
-                )
-                // 2
-            )
-
-        self.__value_font_size = get_ajusted_font_size(
-            self.__value_text, self.__value_area.width
-        )
-        if self.__value_area.height < self.__value_font_size:
-            self.__value_font_size = self.__value_area.height
-        self.__value_area.x = int(
-            (
-                self.__value_area.width
-                - get_text_width(self.__value_text, self.__value_font_size)
-            )
-            // 2
-        )
-
-        if self.__last_unit_text != self.__unit_text:
-            self.__last_unit_text = self.__unit_text
-            self.__unit_font_size = get_ajusted_font_size(
-                self.__unit_text, self.__unit_area.width
-            )
-            if self.__unit_area.height < self.__unit_font_size:
-                self.__unit_font_size = self.__unit_area.height
-            self.__unit_area.x = int(
-                self.__value_area.width
-                + (
-                    self.__unit_area.width
-                    - get_text_width(self.__unit_text, self.__unit_font_size)
-                )
-                // 2
-            )
-
     def __change_request(self, mut_client):
-        log_d(LOG_TAG, "Change Request")
         self.__scheduler.remove_interval(self.__scheduled_task_id)
         self.__scheduled_task_id = None
         self.__current_request_index = (self.__current_request_index + 1) % len(
             self.__request_table
+        )
+        log_i(
+            LOG_TAG,
+            f"Change Request [ {self.__request_table[self.__current_request_index].request.name} ]",
         )
         self.__start_request(mut_client)
 

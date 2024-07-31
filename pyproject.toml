@@ -15,7 +15,6 @@ omit = [
     "*/__init__.py",
     "cpqa/app/app.py",
     "cpqa/app/scene/_scene_interface.py",
-    "cpqa/app/util/graphics_util.py",
     "cpqa/mut/__mut_mock.py",
     "cpqa/mut/request/*"
 

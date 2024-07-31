@@ -8,7 +8,7 @@ class SceneInterface(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def draw(self):
+    def draw(self, canvas):
         pass
 
     @abstractmethod

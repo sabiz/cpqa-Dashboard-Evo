@@ -11,8 +11,8 @@ def test_exit_scene(mocker):
     exit_scene.update(None)
     assert True
 
-    mocker.patch("pyray.clear_background")
-    exit_scene.draw()
+    mocker.patch("cpqa.app.scene._exit_scene.Painter")
+    exit_scene.draw(None)
     assert True
 
     exit_scene.change_scene_if_needed(None)

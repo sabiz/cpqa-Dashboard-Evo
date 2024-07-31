@@ -1,4 +1,3 @@
-import pyray as pr
 from cpqa.common import log_init
 from cpqa.common import log_d
 from cpqa.common import log_i
@@ -6,10 +5,11 @@ from cpqa.common import Settings
 from cpqa.common import Keys
 from cpqa.app.scene import SceneDirector
 from cpqa.app.core import Scheduler
+from cpqa.app.core import FrameRate
+from cpqa.app.core import Screen
 from cpqa.mut import MutClient
 
 LOG_TAG = "CpqaDashboard"
-FPS = 15
 
 
 class CpqaDashboard:
@@ -18,6 +18,7 @@ class CpqaDashboard:
         self.__settings = Settings()
         self.__settings.load()
         log_init()
+        self.__need_exit = False
         log_d(LOG_TAG, "Init CpqaDashboard")
 
         self.__scene_director = SceneDirector()
@@ -28,15 +29,15 @@ class CpqaDashboard:
 
     def run(self):
         log_i(LOG_TAG, "CpqaDashboard Run")
-        width = self.__settings.get(Keys.WINDOW_WIDTH)
-        height = self.__settings.get(Keys.WINDOW_HEIGHT)
-        pr.init_window(width, height, "Cpqa-Dashboard-Evo")
-        pr.set_target_fps(FPS)
 
-        while not pr.window_should_close():
+        frame_rate = FrameRate()
+        screen = Screen()
+        while not self.__need_exit:
             self.__scheduler.tick()
             self.__scene_director.update(self.__mut_client)
-            self.__scene_director.draw()
+            self.__need_exit = screen.update(
+                lambda canvas: self.__scene_director.draw(canvas)
+            )
             self.__scene_director.change_scene_if_needed(self.__mut_client)
-        pr.close_window()
+            frame_rate.wait()
         log_i(LOG_TAG, "CpqaDashboard Exit")

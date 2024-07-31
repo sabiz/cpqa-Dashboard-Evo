@@ -1,4 +1,3 @@
-import pyray as pr
 from ._null_scene import NullScene
 from ._initializing_scene import InitializingScene
 from ._main_scene import MainScene
@@ -24,19 +23,16 @@ class SceneDirector:
         scene = self.__get_current_scene()
         scene.update(mut_client)
 
-    def draw(self):
+    def draw(self, canvas):
         # log_d(LOG_TAG, f"SceneDirector Draw: {self.__scene}")
         scene = self.__get_current_scene()
-        pr.begin_drawing()
-        scene.draw()
-        pr.draw_fps(0, 0)
-        pr.end_drawing()
+        scene.draw(canvas)
 
     def change_scene_if_needed(self, mut_client):
         next_scene = self.__get_current_scene().change_scene_if_needed(mut_client)
         if next_scene is None:
             return
-        log_i(LOG_TAG, f"Change scene to {next_scene}")
+        log_i(LOG_TAG, f"Change scene to [ {next_scene.__name__} ]")
         self.__get_current_scene().on_exit(mut_client)
         self.__scene = next_scene
         self.__get_current_scene().on_enter(mut_client)

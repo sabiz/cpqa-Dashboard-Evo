@@ -1,4 +1,3 @@
-import pyray as pr
 import logging
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from pathlib import Path
@@ -11,7 +10,6 @@ file_log_level = logging.DEBUG
 log_file_name = None
 log_file_size = None
 log_file_history_count = None
-pr.set_trace_log_level(pr.LOG_DEBUG)
 
 
 def __create_handlers(need_stream_handler, need_file_handler):
@@ -74,15 +72,6 @@ def log_init():
                 logger.removeHandler(h)
         _, file_handler = __create_handlers(False, True)
         logger.addHandler(file_handler)
-
-    if stream_log_level == logging.DEBUG:
-        pr.set_trace_log_level(pr.LOG_DEBUG)
-    elif stream_log_level == logging.INFO:
-        pr.set_trace_log_level(pr.LOG_INFO)
-    elif stream_log_level == logging.WARNING:
-        pr.set_trace_log_level(pr.LOG_WARNING)
-    else:
-        pr.set_trace_log_level(pr.LOG_ERROR)
 
     initialized = True
 

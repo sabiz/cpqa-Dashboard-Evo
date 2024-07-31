@@ -1,7 +1,8 @@
 import time
-import pyray as pr
 import subprocess
 from cpqa.app.core import Scheduler
+from cpqa.app.core import MouseEvent
+from cpqa.app.core import MouseEvents
 from cpqa.app.scene._main_scene import MainScene
 from cpqa.app.scene._exit_scene import ExitScene
 from cpqa.common import Keys
@@ -9,13 +10,6 @@ from cpqa.common._settings import RequestSetting
 
 
 def test_main_scene(mocker):
-    mocker.patch("pyray.get_screen_width", return_value=320)
-    mocker.patch("pyray.get_screen_height", return_value=240)
-    mocker.patch(
-        "cpqa.app.scene._main_scene.get_ajusted_font_size", return_value=10
-    )  # from cpqa.app.util.graphics_util import get_ajusted_font_size
-    mocker.patch("cpqa.app.scene._main_scene.get_text_width", return_value=10)
-
     class MockSettings:
         REQUEST_KEY_LIST = [
             Keys.REQUEST_BOOST,
@@ -32,6 +26,16 @@ def test_main_scene(mocker):
                 return RequestSetting(False, 100)
             elif x == Keys.POWER_BUTTON_COMMAND:
                 return "cmd"
+            elif x == Keys.WINDOW_WIDTH:
+                return 320
+            elif x == Keys.WINDOW_HEIGHT:
+                return 240
+
+    mocker.patch("cpqa.app.scene._main_scene.Painter")
+    mocker.patch(
+        "cpqa.app.scene._main_scene.Settings.get",
+        side_effect=MockSettings().get,
+    )
 
     class MockMutClient:
         def __init__(self):
@@ -70,16 +74,12 @@ def test_main_scene(mocker):
     assert main_scene._MainScene__unit_text == "kgf/cm2"
 
     main_scene.update(mockMutClient)
-    pr_cler_background = mocker.patch("pyray.clear_background")
-    mocker.patch("pyray.draw_rectangle")
-    mocker.patch("pyray.draw_text")
-    mocker.patch("pyray.draw_ring")
-    mocker.patch("pyray.draw_line_ex")
-    main_scene.draw()
-    pr_cler_background.assert_called_once()
+    main_scene.draw(None)
 
-    mocker.patch("pyray.is_mouse_button_released", return_value=True)
-    mocker.patch("pyray.get_mouse_position", return_value=pr.Vector2(155, 220))
+    mocker.patch(
+        "cpqa.app.scene._main_scene.Screen.get_mouse_event",
+        return_value=[MouseEvent(MouseEvents.LEFT_BUTTON_UP, 120, 200)],
+    )
     main_scene.update(mockMutClient)
     time.sleep(1)
     scheduler.tick()
@@ -94,8 +94,10 @@ def test_main_scene(mocker):
     assert main_scene._MainScene__value_text == "N/A"
     assert main_scene._MainScene__unit_text == ""
 
-    mocker.patch("pyray.is_mouse_button_released", return_value=True)
-    mocker.patch("pyray.get_mouse_position", return_value=pr.Vector2(320, 0))
+    mocker.patch(
+        "cpqa.app.scene._main_scene.Screen.get_mouse_event",
+        return_value=[MouseEvent(MouseEvents.LEFT_BUTTON_UP, 320, 0)],
+    )
 
     def subprocess_run(*args, **kwargs):
         assert args[0] == "cmd"

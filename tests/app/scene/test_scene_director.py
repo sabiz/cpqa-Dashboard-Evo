@@ -1,8 +1,9 @@
 from cpqa.app.scene import SceneDirector
-from cpqa.app.scene._null_scene import NullScene
 
 
 def test_scene_director(mocker):
+    mocker.patch("cpqa.app.scene._scene_director.InitializingScene")
+    mocker.patch("cpqa.app.scene._scene_director.MainScene")
     scene_director = SceneDirector()
 
     class MockScene:
@@ -16,7 +17,7 @@ def test_scene_director(mocker):
         def update(self, mut_client):
             self.update_called = True
 
-        def draw(self):
+        def draw(self, canvas):
             self.draw_called = True
 
         def change_scene_if_needed(self, mut_client):
@@ -40,12 +41,7 @@ def test_scene_director(mocker):
     scene_director.update(None)
     assert mock_scene.update_called == True
 
-    pr_begin_drawing = mocker.patch("pyray.begin_drawing")
-    pr_end_drawing = mocker.patch("pyray.end_drawing")
-    mocker.patch("pyray.draw_fps")
-    scene_director.draw()
-    pr_begin_drawing.assert_called_once()
-    pr_end_drawing.assert_called_once()
+    scene_director.draw(None)
     assert mock_scene.draw_called == True
 
     scene_director.change_scene_if_needed(None)
