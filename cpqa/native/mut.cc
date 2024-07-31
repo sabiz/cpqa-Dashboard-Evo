@@ -302,7 +302,9 @@ static int Mut_init(Mut *self, PyObject *args, PyObject *kwds) {
         PyErr_SetString(PyExc_TypeError, "log_func must be callable");
         return -1;
     }
-    Py_XSETREF(self->logFunctionRef, Py_NewRef(logFunctionRef));
+    Py_XINCREF(logFunctionRef); 
+    Py_XDECREF(self->logFunctionRef);
+    self->logFunctionRef = logFunctionRef;
 
     log(self, LOG_VERBOSE, "Mut Options VID: %04lx, PID: %04lx", vendorId, productId);
 #ifndef WIN32
@@ -311,10 +313,6 @@ static int Mut_init(Mut *self, PyObject *args, PyObject *kwds) {
     self->ftHandle = NULL;
     return 0;
 }
-
-static PyMemberDef Mut_members[] = {
-    {NULL}
-};
 
 static PyMethodDef Mut_methods[] = {
     {"device_count", (PyCFunction)deviceCount, METH_NOARGS, "Get device count"},
@@ -333,7 +331,7 @@ static PyTypeObject MutType = {
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = PyDoc_STR("MUT class"),
     .tp_methods = Mut_methods,
-    .tp_members = Mut_members,
+    .tp_members = NULL,
     .tp_init = (initproc) Mut_init,
     .tp_new = Mut_new,
 };
