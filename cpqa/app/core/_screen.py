@@ -37,11 +37,15 @@ class Screen:
 
         self.__canvas = np.zeros((height, width, 3), np.uint8)
         self.__use_frame_buffer = settings.get(Keys.USE_FRAME_BUFFER)
+        self.__frame_buffer_handle = None
+        if self.__use_frame_buffer:
+            fb_path = settings.get(Keys.FRAME_BUFFER_PATH)
+            self.__frame_buffer_handle = open(fb_path, "rb+")
         self.__destryed = False
         atexit.register(self.__destry)
 
-        cv2.imshow(Screen.__WINDOW_NAME, self.__canvas)
         if not self.__use_frame_buffer:
+            cv2.imshow(Screen.__WINDOW_NAME, self.__canvas)
             cv2.setMouseCallback(Screen.__WINDOW_NAME, self.__on_mouse_event)
 
     def update(self, draw_func):
@@ -72,9 +76,13 @@ class Screen:
         return False
 
     def __update_for_frame_buffer(self, draw_func):
+        if self.__frame_buffer_handle is None:
+            return False
         draw_func(self.__canvas)
-        raise NotImplementedError("Frame buffer is not implemented yet")
-        # TODO
+        buffer = cv2.cvtColor(self.__canvas.copy(), cv2.COLOR_BGR2BGR565)
+        self.__frame_buffer_handle.seek(0)
+        self.__frame_buffer_handle.write(buffer)
+        return False
 
     def __on_mouse_event(self, event, x, y, flags, param):
         if event == cv2.EVENT_MOUSEMOVE:
@@ -99,7 +107,7 @@ class Screen:
             return
         self.__destryed = True
         if self.__use_frame_buffer:
-            raise NotImplementedError("Frame buffer is not implemented yet")
-            # TODO
+            if self.__frame_buffer_handle is not None:
+                self.__frame_buffer_handle.close()
         else:
             cv2.destroyAllWindows()
