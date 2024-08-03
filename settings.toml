@@ -1,0 +1,144 @@
+[app]
+# window_width = 640
+# window_height = 480
+window_width = 320
+window_height = 240
+use_frame_buffer = false
+frame_buffer_path = "/dev/fb1"
+event_path = "/dev/input/event1"
+power_button_command = "echo 'power off'"
+
+
+[log]
+# Log level for the loggers [debug, info, warn, error]
+log_level_stream = "debug"
+log_level_file = "debug"
+log_file_name = "log/app.log"
+# 1024 * 1024 = 1MB
+log_file_size = 1048576
+log_file_history_count = 3
+
+[mut]
+use_mock = true
+vendor_id = 0x0403
+product_id = 0xcc4a
+device_index = 0
+
+[request]
+    [request.afr_map]
+    enabled = false
+    interval = 500
+    [request.air_conditioning_relay]
+    enabled = false
+    interval = 500
+    [request.air_conditioning_switch]
+    enabled = false
+    interval = 500
+    [request.air_flow_hz]
+    enabled = true
+    interval = 500
+    [request.air_flow_rev]
+    enabled = false
+    interval = 500
+    [request.air_temperature]
+    enabled = true
+    interval = 500
+    [request.air_volume]
+    enabled = true
+    interval = 500
+    [request.barometer]
+    enabled = true
+    interval = 500
+    [request.battery_level]
+    enabled = true
+    interval = 500
+    [request.boost]
+    enabled = false
+    interval = 500
+    [request.coolant_temperature]
+    enabled = true
+    interval = 500
+    [request.crank_signal_switch]
+    enabled = false
+    interval = 500
+    [request.ecu_load]
+    enabled = false
+    interval = 500
+    [request.egr_temperature]
+    enabled = false
+    interval = 500
+    [request.engine_rpm]
+    enabled = true
+    interval = 500
+    [request.fuel_consumption]
+    enabled = true
+    interval = 500
+    [request.fuel_trim_high]
+    enabled = false
+    interval = 500
+    [request.fuel_trim_low]
+    enabled = false
+    interval = 500
+    [request.fuel_trim_mid]
+    enabled = false
+    interval = 500
+    [request.gear]
+    enabled = true
+    interval = 500
+    [request.idle_position_switch]
+    enabled = false
+    interval = 500
+    [request.inhibitor_switch]
+    enabled = false
+    interval = 500
+    [request.injector_duty_cycle]
+    enabled = false
+    interval = 500
+    [request.injector_latency]
+    enabled = false
+    interval = 500
+    [request.injector_pulse_width]
+    enabled = false
+    interval = 500
+    [request.isc_steps]
+    enabled = false
+    interval = 500
+    [request.knock_sum]
+    enabled = true
+    interval = 500
+    [request.load_error]
+    enabled = true
+    interval = 500
+    [request.maf_air_temperature]
+    enabled = false
+    interval = 500
+    [request.octane_level]
+    enabled = false
+    interval = 500
+    [request.oxygen_sensor]
+    enabled = false
+    interval = 500
+    [request.oxygen_sensor2]
+    enabled = false
+    interval = 500
+    [request.power_steering_switch]
+    enabled = false
+    interval = 500
+    [request.speed]
+    enabled = false
+    interval = 500
+    [request.target_idle_rpm]
+    enabled = true
+    interval = 500
+    [request.throttle_position]
+    enabled = true
+    interval = 500
+    [request.timing_advance]
+    enabled = false
+    interval = 500
+    [request.wastegate_duty_cycle]
+    enabled = false
+    interval = 500
+    [request.wastegate_duty_cycle_correction]
+    enabled = false
+    interval = 500

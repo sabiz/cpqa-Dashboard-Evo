@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cpqa"
+version = "0.1.0"
+
+[tool.setuptools.packages.find]
+exclude = []
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+    "*/__init__.py",
+    "cpqa/app/app.py",
+    "cpqa/app/scene/_scene_interface.py",
+    "cpqa/mut/__mut_mock.py",
+    "cpqa/mut/request/*"
+
+]
