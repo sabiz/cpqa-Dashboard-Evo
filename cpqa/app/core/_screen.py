@@ -47,6 +47,10 @@ class Screen:
         if not self.__use_frame_buffer:
             cv2.imshow(Screen.__WINDOW_NAME, self.__canvas)
             cv2.setMouseCallback(Screen.__WINDOW_NAME, self.__on_mouse_event)
+        else:
+            from ._event_linux import EventLinux
+
+            self.__event = EventLinux(settings.get(Keys.EVENT_PATH))
 
     def update(self, draw_func):
         if self.__destryed:
@@ -76,6 +80,7 @@ class Screen:
         return False
 
     def __update_for_frame_buffer(self, draw_func):
+        self.__event.read_mouse_event(self.__on_mouse_event)
         if self.__frame_buffer_handle is None:
             return False
         draw_func(self.__canvas)
@@ -109,5 +114,6 @@ class Screen:
         if self.__use_frame_buffer:
             if self.__frame_buffer_handle is not None:
                 self.__frame_buffer_handle.close()
+            self.__event.close()
         else:
             cv2.destroyAllWindows()

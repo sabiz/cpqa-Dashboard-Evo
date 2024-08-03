@@ -1,4 +1,4 @@
-from pip._vendor import tomli as tomllib
+import tomli as tomllib
 import logging
 from collections import namedtuple
 from pathlib import Path
@@ -23,6 +23,7 @@ class Keys(Enum):
     WINDOW_HEIGHT = SettingsKey("app", "window_height", int)
     USE_FRAME_BUFFER = SettingsKey("app", "use_frame_buffer", bool)
     FRAME_BUFFER_PATH = SettingsKey("app", "frame_buffer_path", str)
+    EVENT_PATH = SettingsKey("app", "event_path", str)
     POWER_BUTTON_COMMAND = SettingsKey("app", "power_button_command", str)
 
     USE_MOCK = SettingsKey("mut", "use_mock", bool)
